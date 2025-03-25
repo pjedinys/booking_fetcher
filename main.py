@@ -1,6 +1,7 @@
 import json
 import requests
 import pandas as pd
+import numpy as np
 
 with open("payload.json", "r") as f:
     data = json.load(f)
@@ -25,7 +26,7 @@ data["variables"]["input"]["dates"]["checkin"] = None
 data["variables"]["input"]["dates"]["checkout"] = None
 data["variables"]["input"]["flexibleDatesConfig"]["broadDatesCalendar"]["checkinMonths"].append("7-2025")
 data["variables"]["input"]["flexibleDatesConfig"]["broadDatesCalendar"]["checkinMonths"].append("8-2025")
-data["variables"]["input"]["flexibleDatesConfig"]["broadDatesCalendar"]["los"].append(4) # num nights
+data["variables"]["input"]["flexibleDatesConfig"]["broadDatesCalendar"]["los"].append(6) # num nights
 data["variables"]["input"]["flexibleDatesConfig"]["broadDatesCalendar"]["losType"] = "CUSTOM"
 data["variables"]["input"]["flexibleDatesConfig"]["broadDatesCalendar"]["startWeekdays"].append(1) # monday
 data["variables"]["input"]["flexibleDatesConfig"]["dateFlexUseCase"] = "BROAD_DATES"
@@ -71,7 +72,8 @@ for destination in destinations:
     df['normalized_price'] = (df['price'] - df['price'].min()) / (df['price'].max() - df['price'].min())
     normalized_review_score = (df['review_score'] - df['review_score'].min()) / (df['review_score'].max() - df['review_score'].min())
     normalized_review_count = (df['review_count'] - df['review_count'].min()) / (df['review_count'].max() - df['review_count'].min())
-    weighted_review_score = normalized_review_score * normalized_review_count
+    adjusted_review_count = normalized_review_count.apply(lambda x: 1/(1+np.sqrt((1-x)/(x+1e-5))))
+    weighted_review_score = normalized_review_score * adjusted_review_count
     df['normalized_weighted_review_score'] = (weighted_review_score - weighted_review_score.min()) / (weighted_review_score.max() - weighted_review_score.min())
     df["score"] = df.apply(lambda row: (mealMap[row.iloc[8]]+row.iloc[9]+row.iloc[10])/3, axis=1)
     df = df.sort_values(by="score", ascending=False).reset_index(drop=True)
