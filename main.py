@@ -2,7 +2,7 @@ import json
 import requests
 import pandas as pd
 
-with open("data.json", "r") as f:
+with open("payload.json", "r") as f:
     data = json.load(f)
 
 destinations = ["Maldives", "Cyprus", "Greece", "Italy", "Turkey", "Portugal", "Spain"]
